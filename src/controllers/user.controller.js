@@ -21,7 +21,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const isUserExists = await User.findOne({
-    $or: [email, username],
+    $or: [{ email }, { username }],
   });
   if (isUserExists) {
     throw new ApiError(409, "Username or email already exists");
@@ -29,11 +29,19 @@ const registerUser = asyncHandler(async (req, res) => {
 
   //console.log*(req.files)
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
-
   //Check if files are there  --> Avatar is mandatory
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
+  }
+
+  //Check if coverImage is uploaded by user or not, avatar is mandatory and is checked above
+  let coverImageLocalPath;
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0].path;
   }
 
   //Upload files to cloudinary
